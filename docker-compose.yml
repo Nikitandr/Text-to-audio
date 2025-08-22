@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  text-to-audio:
+    build: .
+    container_name: text-to-audio-dev
+    volumes:
+      # Монтируем папки для входных и выходных файлов
+      - ./input:/app/input:ro
+      - ./output:/app/output
+      # Временные файлы в именованном volume
+      - temp_data:/app/temp
+    secrets:
+      # Монтируем авторизованный ключ как секрет
+      - yandex_authorized_key
+    environment:
+      # Путь к ключу в контейнере
+      - YANDEX_KEY_PATH=/run/secrets/yandex_authorized_key
+      # Настройки логирования
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=plain
+      # Директории
+      - TEMP_DIR=/app/temp
+      - INPUT_DIR=/app/input
+      - OUTPUT_DIR=/app/output
+      # Настройки синтеза речи
+      - DEFAULT_VOICE=jane
+      - DEFAULT_ROLE=good
+      - DEFAULT_FORMAT=wav
+      # Настройки обработки
+      - MAX_CHUNK_SIZE=4500
+      - MAX_RETRIES=3
+      - RETRY_DELAY=1
+      # Настройки rate limiting
+      - REQUESTS_PER_SECOND=35
+      # Redis для кэширования токенов
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_ENABLED=true
+    depends_on:
+      - redis
+    networks:
+      - text-to-audio-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: text-to-audio-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - text-to-audio-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+secrets:
+  yandex_authorized_key:
+    file: ./secrets/authorized_key.json
+
+volumes:
+  temp_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  text-to-audio-network:
+    driver: bridge

@@ -1,0 +1,144 @@
+version: '3.8'
+
+services:
+  text-to-audio:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: text-to-audio:latest
+    container_name: text-to-audio-prod
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    volumes:
+      # Монтируем папки для входных и выходных файлов
+      - ./input:/app/input:ro
+      - ./output:/app/output
+      # Временные файлы в именованном volume
+      - temp_data:/app/temp
+    secrets:
+      # В production используем внешний секрет
+      - yandex_authorized_key
+    environment:
+      # Путь к ключу в контейнере
+      - YANDEX_KEY_PATH=/run/secrets/yandex_authorized_key
+      # Настройки логирования для production
+      - LOG_LEVEL=WARNING
+      - LOG_FORMAT=json
+      # Директории
+      - TEMP_DIR=/app/temp
+      - INPUT_DIR=/app/input
+      - OUTPUT_DIR=/app/output
+      # Настройки синтеза речи
+      - DEFAULT_VOICE=jane
+      - DEFAULT_ROLE=good
+      - DEFAULT_FORMAT=wav
+      # Настройки обработки
+      - MAX_CHUNK_SIZE=4500
+      - MAX_RETRIES=5
+      - RETRY_DELAY=2
+      # Более консервативные настройки rate limiting для production
+      - REQUESTS_PER_SECOND=30
+      # Redis для кэширования токенов
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_ENABLED=true
+    depends_on:
+      - redis
+    networks:
+      - text-to-audio-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: text-to-audio-redis-prod
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    volumes:
+      - redis_data:/data
+    networks:
+      - text-to-audio-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 200mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # Мониторинг (опционально)
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - text-to-audio-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+secrets:
+  yandex_authorized_key:
+    external: true
+    # В production секрет должен быть создан заранее:
+    # docker secret create yandex_authorized_key ./secrets/authorized_key.json
+
+volumes:
+  temp_data:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=1g,uid=1000,gid=1000
+  redis_data:
+    driver: local
+
+networks:
+  text-to-audio-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Конфигурация для Docker Swarm (опционально)
+configs:
+  app_config:
+    external: true
+    # docker config create app_config ./config/app.conf

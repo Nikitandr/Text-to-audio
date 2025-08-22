@@ -1,0 +1,53 @@
+# Секретные файлы и ключи
+secrets/
+*.json
+authorized_key.json
+
+# Переменные окружения
+.env
+
+# Временные файлы и кэш
+temp/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Аудиофайлы и результаты обработки
+input/
+output/
+*.wav
+*.mp3
+*.ogg
+
+# Логи
+logs/
+*.log
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Redis
+dump.rdb
