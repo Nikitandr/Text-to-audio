@@ -51,3 +51,6 @@ htmlcov/
 
 # Redis
 dump.rdb
+
+# Тесты
+tests/

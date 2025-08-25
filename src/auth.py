@@ -10,7 +10,7 @@ import requests
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 import structlog
-from .utils import safe_log
+from utils import safe_log
 
 logger = structlog.get_logger(__name__)
 
