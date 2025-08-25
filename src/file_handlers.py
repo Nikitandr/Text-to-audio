@@ -25,7 +25,7 @@ try:
 except ImportError:
     pdfplumber = None
 
-from .utils import get_file_extension, format_file_size
+from utils import get_file_extension, format_file_size
 
 logger = structlog.get_logger(__name__)
 
