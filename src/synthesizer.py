@@ -17,9 +17,9 @@ except ImportError:
     configure_credentials = None
     creds = None
 
-from .auth import get_token_manager, YandexAuthError
-from .text_processor import TextChunk, clean_text_for_synthesis
-from .utils import ProgressTracker, StatisticsCollector, ensure_directory
+from auth import get_token_manager, YandexAuthError
+from text_processor import TextChunk, clean_text_for_synthesis
+from utils import ProgressTracker, StatisticsCollector, ensure_directory
 
 logger = structlog.get_logger(__name__)
 
@@ -168,8 +168,7 @@ class SpeechSynthesizer:
                 # Выполняем синтез
                 result = self.model.synthesize(
                     clean_text,
-                    raw_format=False,
-                    unsafe_mode=True  # Используем unsafe режим для больших текстов
+                    raw_format=False
                 )
                 
                 # Сохраняем результат
@@ -401,7 +400,7 @@ def test_synthesis() -> bool:
         True если тест прошел успешно
     """
     try:
-        from .text_processor import TextChunk
+        from text_processor import TextChunk
         
         # Создаем тестовый фрагмент
         test_chunk = TextChunk("Это тест синтеза речи.", 0)
