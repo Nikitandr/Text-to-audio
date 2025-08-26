@@ -30,7 +30,7 @@ class TokenManager:
         Args:
             key_path: Путь к файлу с авторизованным ключом
         """
-        self.key_path = key_path or os.getenv('YANDEX_KEY_PATH', '/run/secrets/yandex_authorized_key')
+        self.key_path = key_path or os.getenv('YANDEX_KEY_PATH', './secrets/authorized_key.json')
         self.key_data: Optional[Dict[str, Any]] = None
         self.iam_token: Optional[str] = None
         self.token_expires_at: Optional[datetime] = None

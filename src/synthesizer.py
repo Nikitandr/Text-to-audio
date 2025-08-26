@@ -166,6 +166,13 @@ class SpeechSynthesizer:
                 self.rate_limiter.wait_if_needed()
                 
                 # Выполняем синтез
+                logger.debug(
+                    "Параметры синтеза",
+                    text_length=len(clean_text),
+                    voice=self.model.voice,
+                    role=self.model.role
+                )
+                
                 result = self.model.synthesize(
                     clean_text,
                     raw_format=False
