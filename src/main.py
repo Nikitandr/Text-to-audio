@@ -10,27 +10,27 @@ from pathlib import Path
 import structlog
 
 # Импорт модулей приложения
-from .utils import (
+from utils import (
     setup_logging, print_colored, format_duration, format_file_size,
     validate_file_path, get_file_extension, cleanup_temp_files
 )
-from .file_handlers import (
+from file_handlers import (
     extract_text_from_file, get_file_info, validate_input_file,
     FileHandlerError
 )
-from .text_processor import (
+from text_processor import (
     process_text, estimate_chunks_count, validate_text_for_processing,
     TextProcessorError
 )
-from .synthesizer import (
+from synthesizer import (
     synthesize_text_chunks, estimate_synthesis_time,
     SynthesizerError
 )
-from .audio_merger import (
+from audio_merger import (
     merge_audio_files, get_audio_file_info,
     AudioMergerError
 )
-from .auth import test_authentication, YandexAuthError
+from auth import test_authentication, YandexAuthError
 
 # Настройка логгера
 logger = structlog.get_logger(__name__)
@@ -260,7 +260,7 @@ class TextToAudioApp:
         print_colored("🧹 Очистка временных файлов...", "blue")
         
         try:
-            from .audio_merger import cleanup_audio_files
+            from audio_merger import cleanup_audio_files
             deleted_count = cleanup_audio_files(audio_files)
             
             print_colored(
