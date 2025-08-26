@@ -325,22 +325,11 @@ class TextToAudioApp:
 def main(input: str, output: str, format: str, temp_dir: Optional[str], log_level: str):
     """
     Text-to-Audio конвертер с использованием Yandex SpeechKit
-    
     Конвертирует текстовые документы в аудиофайлы.
-    
-    Примеры использования:
     
     \b
     # Базовое использование
     python main.py -i document.txt -o audio.wav
-    
-    \b
-    # С указанием формата
-    python main.py -i book.pdf -o audiobook.mp3 -f mp3
-    
-    \b
-    # С дополнительными параметрами
-    python main.py -i article.md -o result.ogg -f ogg --log-level DEBUG
     """
     try:
         # Создаем экземпляр приложения
