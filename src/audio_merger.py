@@ -17,7 +17,7 @@ except ImportError:
     AudioSegment = None
     which = None
 
-from .utils import ensure_directory, format_file_size, format_duration
+from utils import ensure_directory, format_file_size, format_duration
 
 logger = structlog.get_logger(__name__)
 
