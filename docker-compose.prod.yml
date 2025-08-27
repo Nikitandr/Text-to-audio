@@ -27,17 +27,17 @@ services:
       # Временные файлы в именованном volume
       - temp_data:/app/temp
     env_file:
-      - .env
+      - .env.prod
     environment:
-      # Yandex Cloud авторизация из .env файла
+      # Yandex Cloud авторизация из .env.prod файла
       - YANDEX_KEY_ID=${YANDEX_KEY_ID}
       - YANDEX_SERVICE_ACCOUNT_ID=${YANDEX_SERVICE_ACCOUNT_ID}
       - YANDEX_KEY_ALGORITHM=${YANDEX_KEY_ALGORITHM}
       - YANDEX_PUBLIC_KEY=${YANDEX_PUBLIC_KEY}
       - YANDEX_PRIVATE_KEY=${YANDEX_PRIVATE_KEY}
       # Настройки логирования для production
-      - LOG_LEVEL=${LOG_LEVEL:-WARNING}
-      - LOG_FORMAT=${LOG_FORMAT:-json}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_FORMAT=${LOG_FORMAT}
       # Директории
       - TEMP_DIR=${TEMP_DIR}
       - INPUT_DIR=${INPUT_DIR}
@@ -46,15 +46,20 @@ services:
       - DEFAULT_VOICE=${DEFAULT_VOICE}
       - DEFAULT_ROLE=${DEFAULT_ROLE}
       - DEFAULT_FORMAT=${DEFAULT_FORMAT}
-      # Настройки обработки (более консервативные для production)
+      # Настройки обработки
       - MAX_CHUNK_SIZE=${MAX_CHUNK_SIZE}
-      - MAX_RETRIES=${MAX_RETRIES:-5}
-      - RETRY_DELAY=${RETRY_DELAY:-2}
-      # Более консервативные настройки rate limiting для production
-      - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND:-30}
+      - MAX_RETRIES=${MAX_RETRIES}
+      - RETRY_DELAY=${RETRY_DELAY}
+      # Настройки rate limiting
+      - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
       # Redis для кэширования токенов
       - REDIS_URL=${REDIS_URL}
       - REDIS_ENABLED=${REDIS_ENABLED}
+      # Production специфичные настройки
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT}
+      - REDIS_MAX_CONNECTIONS=${REDIS_MAX_CONNECTIONS}
+      - ENABLE_METRICS=${ENABLE_METRICS}
+      - METRICS_PORT=${METRICS_PORT}
     depends_on:
       - redis
     networks:
