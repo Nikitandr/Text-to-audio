@@ -38,10 +38,6 @@ services:
       - RETRY_DELAY=${RETRY_DELAY}
       # Настройки rate limiting
       - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
-      # Production специфичные настройки
-      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT}
-      - ENABLE_METRICS=${ENABLE_METRICS}
-      - METRICS_PORT=${METRICS_PORT}
     networks:
       - text-to-audio-network
     restart: unless-stopped
