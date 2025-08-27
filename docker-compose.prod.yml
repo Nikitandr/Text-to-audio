@@ -52,16 +52,10 @@ services:
       - RETRY_DELAY=${RETRY_DELAY}
       # Настройки rate limiting
       - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
-      # Redis для кэширования токенов
-      - REDIS_URL=${REDIS_URL}
-      - REDIS_ENABLED=${REDIS_ENABLED}
       # Production специфичные настройки
       - REQUEST_TIMEOUT=${REQUEST_TIMEOUT}
-      - REDIS_MAX_CONNECTIONS=${REDIS_MAX_CONNECTIONS}
       - ENABLE_METRICS=${ENABLE_METRICS}
       - METRICS_PORT=${METRICS_PORT}
-    depends_on:
-      - redis
     networks:
       - text-to-audio-network
     restart: unless-stopped
@@ -71,56 +65,6 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  redis:
-    image: redis:7-alpine
-    container_name: text-to-audio-redis-prod
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
-    volumes:
-      - redis_data:/data
-    networks:
-      - text-to-audio-network
-    restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 200mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
-
-  # Мониторинг (опционально)
-  redis-exporter:
-    image: oliver006/redis_exporter:latest
-    container_name: redis-exporter
-    environment:
-      - REDIS_ADDR=redis://redis:6379
-    ports:
-      - "9121:9121"
-    depends_on:
-      - redis
-    networks:
-      - text-to-audio-network
-    restart: unless-stopped
-    profiles:
-      - monitoring
-
 
 volumes:
   temp_data:
@@ -129,8 +73,6 @@ volumes:
       type: tmpfs
       device: tmpfs
       o: size=1g,uid=1000,gid=1000
-  redis_data:
-    driver: local
 
 networks:
   text-to-audio-network:

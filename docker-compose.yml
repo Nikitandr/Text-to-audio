@@ -35,35 +35,13 @@ services:
       - RETRY_DELAY=${RETRY_DELAY}
       # Настройки rate limiting
       - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
-      # Redis для кэширования токенов
-      - REDIS_URL=${REDIS_URL}
-      - REDIS_ENABLED=${REDIS_ENABLED}
-    depends_on:
-      - redis
     networks:
       - text-to-audio-network
     restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: text-to-audio-redis
-    volumes:
-      - redis_data:/data
-    networks:
-      - text-to-audio-network
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 
 volumes:
   temp_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:
