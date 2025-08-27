@@ -26,11 +26,7 @@ class TokenManager:
     def __init__(self, key_path: Optional[str] = None):
         """
         Инициализация менеджера токенов
-        
-        Args:
-            key_path: Путь к файлу с авторизованным ключом
         """
-        self.key_path = key_path or os.getenv('YANDEX_KEY_PATH', './secrets/authorized_key.json')
         self.key_data: Optional[Dict[str, Any]] = None
         self.iam_token: Optional[str] = None
         self.token_expires_at: Optional[datetime] = None
@@ -39,22 +35,52 @@ class TokenManager:
         self._load_key()
     
     def _load_key(self) -> None:
-        """Загрузка авторизованного ключа из файла"""
+        """Загрузка авторизованного ключа из переменных окружения"""
         try:
-            if not os.path.exists(self.key_path):
-                raise YandexAuthError(f"Файл с ключом не найден: {self.key_path}")
+            # Пытаемся загрузить из переменных окружения
+            key_id = os.getenv('YANDEX_KEY_ID')
+            service_account_id = os.getenv('YANDEX_SERVICE_ACCOUNT_ID')
+            private_key = os.getenv('YANDEX_PRIVATE_KEY')
+            public_key = os.getenv('YANDEX_PUBLIC_KEY')
+            key_algorithm = os.getenv('YANDEX_KEY_ALGORITHM', 'RSA_2048')
             
-            with open(self.key_path, 'r', encoding='utf-8') as f:
-                self.key_data = json.load(f)
+            if all([key_id, service_account_id, private_key]):
+                # Загружаем из переменных окружения
+                self.key_data = {
+                    'id': key_id,
+                    'service_account_id': service_account_id,
+                    'private_key': private_key.replace('\\n', '\n'),  # Восстанавливаем переносы строк
+                    'public_key': public_key.replace('\\n', '\n') if public_key else None,
+                    'key_algorithm': key_algorithm
+                }
+                
+                safe_log(
+                    logger, "info", "Авторизованный ключ загружен из переменных окружения",
+                    key_id=self.key_data['id'],
+                    service_account_id=self.key_data['service_account_id']
+                )
+            else:
+                # Fallback: пытаемся загрузить из файла (для обратной совместимости)
+                key_path = os.getenv('YANDEX_KEY_PATH', './secrets/authorized_key.json')
+                if not os.path.exists(key_path):
+                    raise YandexAuthError(
+                        "Не найдены переменные окружения для авторизации Yandex Cloud. "
+                        "Установите YANDEX_KEY_ID, YANDEX_SERVICE_ACCOUNT_ID, YANDEX_PRIVATE_KEY "
+                        f"или убедитесь что файл {key_path} существует"
+                    )
+                
+                with open(key_path, 'r', encoding='utf-8') as f:
+                    self.key_data = json.load(f)
+                
+                safe_log(
+                    logger, "warning", "Авторизованный ключ загружен из файла (устаревший способ)",
+                    key_path=key_path,
+                    key_id=self.key_data['id'],
+                    service_account_id=self.key_data['service_account_id']
+                )
             
             # Валидация ключа
             self._validate_key()
-            
-            safe_log(
-                logger, "info", "Авторизованный ключ успешно загружен",
-                key_id=self.key_data['id'],
-                service_account_id=self.key_data['service_account_id']
-            )
             
         except json.JSONDecodeError as e:
             raise YandexAuthError(f"Ошибка парсинга JSON ключа: {e}")

@@ -5,37 +5,39 @@ services:
     build: .
     container_name: text-to-audio-dev
     volumes:
-      # Монтируем папки для входных и выходных файлов
-      - ./input:/app/input:ro
-      - ./output:/app/output
+      # Гибкое монтирование данных через переменную окружения
+      - ${DATA_PATH:-./data}:/app/data
       # Временные файлы в именованном volume
       - temp_data:/app/temp
-    secrets:
-      # Монтируем авторизованный ключ как секрет
-      - yandex_authorized_key
+    env_file:
+      - .env
     environment:
-      # Путь к ключу в контейнере
-      - YANDEX_KEY_PATH=/run/secrets/yandex_authorized_key
+      # Yandex Cloud авторизация из .env файла
+      - YANDEX_KEY_ID=${YANDEX_KEY_ID}
+      - YANDEX_SERVICE_ACCOUNT_ID=${YANDEX_SERVICE_ACCOUNT_ID}
+      - YANDEX_KEY_ALGORITHM=${YANDEX_KEY_ALGORITHM}
+      - YANDEX_PUBLIC_KEY=${YANDEX_PUBLIC_KEY}
+      - YANDEX_PRIVATE_KEY=${YANDEX_PRIVATE_KEY}
       # Настройки логирования
-      - LOG_LEVEL=INFO
-      - LOG_FORMAT=plain
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_FORMAT=${LOG_FORMAT}
       # Директории
-      - TEMP_DIR=/app/temp
-      - INPUT_DIR=/app/input
-      - OUTPUT_DIR=/app/output
+      - TEMP_DIR=${TEMP_DIR}
+      - INPUT_DIR=${INPUT_DIR}
+      - OUTPUT_DIR=${OUTPUT_DIR}
       # Настройки синтеза речи
-      - DEFAULT_VOICE=jane
-      - DEFAULT_ROLE=good
-      - DEFAULT_FORMAT=wav
+      - DEFAULT_VOICE=${DEFAULT_VOICE}
+      - DEFAULT_ROLE=${DEFAULT_ROLE}
+      - DEFAULT_FORMAT=${DEFAULT_FORMAT}
       # Настройки обработки
-      - MAX_CHUNK_SIZE=4500
-      - MAX_RETRIES=3
-      - RETRY_DELAY=1
+      - MAX_CHUNK_SIZE=${MAX_CHUNK_SIZE}
+      - MAX_RETRIES=${MAX_RETRIES}
+      - RETRY_DELAY=${RETRY_DELAY}
       # Настройки rate limiting
-      - REQUESTS_PER_SECOND=35
+      - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
       # Redis для кэширования токенов
-      - REDIS_URL=redis://redis:6379/0
-      - REDIS_ENABLED=true
+      - REDIS_URL=${REDIS_URL}
+      - REDIS_ENABLED=${REDIS_ENABLED}
     depends_on:
       - redis
     networks:
@@ -57,9 +59,6 @@ services:
       timeout: 10s
       retries: 3
 
-secrets:
-  yandex_authorized_key:
-    file: ./secrets/authorized_key.json
 
 volumes:
   temp_data:
