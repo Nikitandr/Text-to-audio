@@ -7,20 +7,6 @@ services:
       dockerfile: Dockerfile
     image: text-to-audio:latest
     container_name: text-to-audio-prod
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
     volumes:
       # Гибкое монтирование данных через переменную окружения
       - ${DATA_PATH:-./data}:/app/data
@@ -65,24 +51,10 @@ services:
         max-size: "10m"
         max-file: "3"
 
-
 volumes:
   temp_data:
     driver: local
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
-      o: size=1g,uid=1000,gid=1000
 
 networks:
   text-to-audio-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-
-# Конфигурация для Docker Swarm (опционально)
-configs:
-  app_config:
-    external: true
-    # docker config create app_config ./config/app.conf

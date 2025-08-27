@@ -39,7 +39,6 @@ services:
       - text-to-audio-network
     restart: unless-stopped
 
-
 volumes:
   temp_data:
     driver: local
