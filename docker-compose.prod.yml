@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   text-to-audio:
     build: 
@@ -10,8 +8,6 @@ services:
     volumes:
       # Гибкое монтирование данных через переменную окружения
       - ${DATA_PATH:-./data}:/app/data
-      # Временные файлы в именованном volume
-      - temp_data:/app/temp
     env_file:
       - .env.prod
     environment:
@@ -34,19 +30,9 @@ services:
       - RETRY_DELAY=${RETRY_DELAY}
       # Настройки rate limiting
       - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
-    networks:
-      - text-to-audio-network
     restart: unless-stopped
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-
-volumes:
-  temp_data:
-    driver: local
-
-networks:
-  text-to-audio-network:
-    driver: bridge

@@ -48,8 +48,6 @@ ENV TEMP_DIR=/app/temp
 ENV INPUT_DIR=/app/data/input
 ENV OUTPUT_DIR=/app/data/output
 
-# Открываем порт (если потребуется в будущем)
-EXPOSE 8000
 
 # Проверка здоровья контейнера
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
