@@ -7,24 +7,4 @@ services:
       - ${DATA_PATH:-./data}:/app/data
     env_file:
       - .env
-    environment:
-      # Yandex Cloud авторизация из .env файла
-      - YANDEX_KEY_ID=${YANDEX_KEY_ID}
-      - YANDEX_SERVICE_ACCOUNT_ID=${YANDEX_SERVICE_ACCOUNT_ID}
-      - YANDEX_KEY_ALGORITHM=${YANDEX_KEY_ALGORITHM}
-      - YANDEX_PUBLIC_KEY=${YANDEX_PUBLIC_KEY}
-      - YANDEX_PRIVATE_KEY=${YANDEX_PRIVATE_KEY}
-      # Настройки логирования
-      - LOG_LEVEL=${LOG_LEVEL}
-      - LOG_FORMAT=${LOG_FORMAT}
-      # Настройки синтеза речи
-      - DEFAULT_VOICE=${DEFAULT_VOICE}
-      - DEFAULT_ROLE=${DEFAULT_ROLE}
-      - DEFAULT_FORMAT=${DEFAULT_FORMAT}
-      # Настройки обработки
-      - MAX_CHUNK_SIZE=${MAX_CHUNK_SIZE}
-      - MAX_RETRIES=${MAX_RETRIES}
-      - RETRY_DELAY=${RETRY_DELAY}
-      # Настройки rate limiting
-      - REQUESTS_PER_SECOND=${REQUESTS_PER_SECOND}
     restart: unless-stopped

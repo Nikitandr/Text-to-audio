@@ -5,6 +5,7 @@ authorized_key.json
 
 # Переменные окружения
 .env
+.env.prod
 
 # Временные файлы и кэш
 temp/
