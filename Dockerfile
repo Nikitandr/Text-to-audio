@@ -35,7 +35,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Создаем необходимые директории
-RUN mkdir -p /app/input /app/output /app/temp && \
+RUN mkdir -p /app/data/input /app/data/output /app/temp && \
     chown -R appuser:appuser /app
 
 # Переключаемся на непривилегированного пользователя
@@ -45,8 +45,8 @@ USER appuser
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV TEMP_DIR=/app/temp
-ENV INPUT_DIR=/app/input
-ENV OUTPUT_DIR=/app/output
+ENV INPUT_DIR=/app/data/input
+ENV OUTPUT_DIR=/app/data/output
 
 # Открываем порт (если потребуется в будущем)
 EXPOSE 8000

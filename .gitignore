@@ -18,6 +18,7 @@ venv/
 .venv/
 
 # Аудиофайлы и результаты обработки
+data/
 input/
 output/
 *.wav
