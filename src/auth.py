@@ -44,40 +44,26 @@ class TokenManager:
             public_key = os.getenv('YANDEX_PUBLIC_KEY')
             key_algorithm = os.getenv('YANDEX_KEY_ALGORITHM', 'RSA_2048')
             
-            if all([key_id, service_account_id, private_key]):
-                # Загружаем из переменных окружения
-                self.key_data = {
-                    'id': key_id,
-                    'service_account_id': service_account_id,
-                    'private_key': private_key.replace('\\n', '\n'),  # Восстанавливаем переносы строк
-                    'public_key': public_key.replace('\\n', '\n') if public_key else None,
-                    'key_algorithm': key_algorithm
-                }
-                
-                safe_log(
-                    logger, "info", "Авторизованный ключ загружен из переменных окружения",
-                    key_id=self.key_data['id'],
-                    service_account_id=self.key_data['service_account_id']
+            if not all([key_id, service_account_id, private_key]):
+                raise YandexAuthError(
+                    "Не найдены переменные окружения для авторизации Yandex Cloud. "
+                    "Установите YANDEX_KEY_ID, YANDEX_SERVICE_ACCOUNT_ID, YANDEX_PRIVATE_KEY"
                 )
-            else:
-                # Fallback: пытаемся загрузить из файла (для обратной совместимости)
-                key_path = os.getenv('YANDEX_KEY_PATH', './secrets/authorized_key.json')
-                if not os.path.exists(key_path):
-                    raise YandexAuthError(
-                        "Не найдены переменные окружения для авторизации Yandex Cloud. "
-                        "Установите YANDEX_KEY_ID, YANDEX_SERVICE_ACCOUNT_ID, YANDEX_PRIVATE_KEY "
-                        f"или убедитесь что файл {key_path} существует"
-                    )
-                
-                with open(key_path, 'r', encoding='utf-8') as f:
-                    self.key_data = json.load(f)
-                
-                safe_log(
-                    logger, "warning", "Авторизованный ключ загружен из файла (устаревший способ)",
-                    key_path=key_path,
-                    key_id=self.key_data['id'],
-                    service_account_id=self.key_data['service_account_id']
-                )
+            
+            # Загружаем из переменных окружения
+            self.key_data = {
+                'id': key_id,
+                'service_account_id': service_account_id,
+                'private_key': private_key.replace('\\n', '\n'),  # Восстанавливаем переносы строк
+                'public_key': public_key.replace('\\n', '\n') if public_key else None,
+                'key_algorithm': key_algorithm
+            }
+            
+            safe_log(
+                logger, "info", "Авторизованный ключ загружен из переменных окружения",
+                key_id=self.key_data['id'],
+                service_account_id=self.key_data['service_account_id']
+            )
             
             # Валидация ключа
             self._validate_key()
@@ -215,10 +201,23 @@ class TokenManager:
             # Парсим время истечения из ответа
             expires_at_str = iam_response.get('expiresAt')
             if expires_at_str:
-                # Формат: 2023-12-31T23:59:59Z
-                self.token_expires_at = datetime.fromisoformat(
-                    expires_at_str.replace('Z', '+00:00')
-                ).replace(tzinfo=None)
+                try:
+                    # Формат может быть: 2023-12-31T23:59:59Z или 2023-12-31T23:59:59.123456789Z
+                    # Убираем Z и обрабатываем наносекунды
+                    clean_time = expires_at_str.replace('Z', '')
+                    
+                    # Если есть наносекунды, обрезаем до микросекунд (6 знаков)
+                    if '.' in clean_time:
+                        time_part, fraction = clean_time.split('.')
+                        # Обрезаем до 6 знаков (микросекунды)
+                        fraction = fraction[:6].ljust(6, '0')
+                        clean_time = f"{time_part}.{fraction}"
+                    
+                    self.token_expires_at = datetime.fromisoformat(clean_time)
+                except (ValueError, AttributeError) as e:
+                    logger.warning(f"Не удалось распарсить время истечения токена: {e}")
+                    # Если время не указано или некорректно, считаем что токен действует 12 часов
+                    self.token_expires_at = datetime.now() + timedelta(hours=12)
             else:
                 # Если время не указано, считаем что токен действует 12 часов
                 self.token_expires_at = datetime.now() + timedelta(hours=12)

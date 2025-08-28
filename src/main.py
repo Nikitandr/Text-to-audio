@@ -8,6 +8,10 @@ import click
 from typing import Optional
 from pathlib import Path
 import structlog
+from dotenv import load_dotenv
+
+# Загружаем переменные окружения из .env файла
+load_dotenv()
 
 # Импорт модулей приложения
 from utils import (

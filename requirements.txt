@@ -10,17 +10,16 @@ pdfplumber>=0.9.0
 
 # Аудио обработка и конвертация
 pydub>=0.25.1
-PyAudio>=0.2.14
-audioop-lts>=0.2.2
+# Поддержка audioop для Python 3.13+
+audioop-lts>=0.2.2; python_version>="3.13"
 
 # CLI интерфейс и утилиты
 click>=8.1.0
 tqdm>=4.65.0
 colorama>=0.4.6
 
-# Сетевые запросы и кэширование
+# Сетевые запросы
 requests>=2.31.0
-redis>=4.5.0
 
 # Структурированное логирование
 structlog>=23.1.0

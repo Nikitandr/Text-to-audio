@@ -1,5 +1,5 @@
 # Используем официальный образ Python 3.9 slim
-FROM python:3.9-slim
+FROM python:3.13-slim
 
 # Устанавливаем метаданные
 LABEL maintainer="Text-to-Audio Team"
