@@ -21,10 +21,6 @@ services:
       # Настройки логирования
       - LOG_LEVEL=${LOG_LEVEL}
       - LOG_FORMAT=${LOG_FORMAT}
-      # Директории
-      - TEMP_DIR=${TEMP_DIR}
-      - INPUT_DIR=${INPUT_DIR}
-      - OUTPUT_DIR=${OUTPUT_DIR}
       # Настройки синтеза речи
       - DEFAULT_VOICE=${DEFAULT_VOICE}
       - DEFAULT_ROLE=${DEFAULT_ROLE}
